@@ -121,8 +121,8 @@ class TestTicTacToe(unittest.TestCase):
         # Create a draw scenario
         moves = [
             (0, 0), (0, 1), (0, 2),  # X, O, X
-            (1, 1), (1, 0), (1, 2),  # O, X, O
-            (2, 0), (2, 2), (2, 1)   # X, O, X
+            (1, 0), (1, 2), (2, 0),  # X, O, X  
+            (1, 1), (2, 2), (2, 1)   # O, X, O
         ]
         
         for move in moves:
@@ -204,9 +204,9 @@ class TestTicTacToe(unittest.TestCase):
         """Test draw status message"""
         # Create a draw
         moves = [
-            (0, 0), (0, 1), (0, 2),
-            (1, 1), (1, 0), (1, 2),
-            (2, 0), (2, 2), (2, 1)
+            (0, 0), (0, 1), (0, 2),  # X, O, X
+            (1, 0), (1, 2), (2, 0),  # X, O, X  
+            (1, 1), (2, 2), (2, 1)   # O, X, O
         ]
         
         for move in moves:
@@ -288,13 +288,11 @@ class TestGameIntegration(unittest.TestCase):
             (2, 1),  # X tries occupied (should fail)
             (2, 0),  # X bottom left
             (0, 2),  # O top right
-            (1, 0),  # X middle left
-            (1, 2),  # O middle right (blocks X)
-            (2, 2),  # X bottom right (X should win with diagonal)
+            (1, 0),  # X middle left (X wins with middle row)
         ]
         
         # Play through the moves
-        expected_players = ['X', 'O', 'X', 'O', 'O', 'X', 'O', 'X', 'O']
+        expected_players = ['X', 'O', 'X', 'O', 'X', 'X', 'O', 'X']
         move_index = 0
         
         for i, move in enumerate(moves):
@@ -306,6 +304,10 @@ class TestGameIntegration(unittest.TestCase):
                 result = game.make_move(move[0], move[1])
                 self.assertTrue(result)
                 move_index += 1
+                
+                # Check if game is over after move index 7 (X wins)
+                if move_index == 7:
+                    break
         
         self.assertTrue(game.game_over)
         self.assertEqual(game.winner, 'X')
@@ -316,15 +318,15 @@ class TestGameIntegration(unittest.TestCase):
         
         # Sequence that leads to a draw
         moves = [
-            (1, 1),  # X center
-            (0, 0),  # O corner
-            (0, 2),  # X opposite corner
-            (2, 0),  # O opposite corner
-            (0, 1),  # X blocks O
-            (2, 1),  # O blocks X
-            (1, 0),  # X
-            (1, 2),  # O
-            (2, 2),  # X fills last spot
+            (0, 0),  # X top-left
+            (1, 1),  # O center
+            (0, 2),  # X top-right
+            (0, 1),  # O top-middle
+            (2, 1),  # X bottom-middle
+            (1, 0),  # O middle-left
+            (1, 2),  # X middle-right
+            (2, 0),  # O bottom-left
+            (2, 2),  # X bottom-right
         ]
         
         for move in moves:

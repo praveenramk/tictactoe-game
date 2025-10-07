@@ -285,17 +285,14 @@ jobs:
         cat > setup.py << EOF
         from setuptools import setup, find_packages
         
-        with open("README.md", "r", encoding="utf-8") as fh:
-            long_description = fh.read()
-        
         setup(
             name="tictactoe-game",
             version="1.0.0",
             author="Your Name",
             author_email="your.email@example.com",
             description="A simple two-player Tic Tac Toe game in Python",
-            long_description=long_description,
-            long_description_content_type="text/markdown",
+            long_description="A simple two-player Tic Tac Toe game in Python",
+            long_description_content_type="text/plain",
             url="https://github.com/praveenramk/tictactoe-game",
             py_modules=["tictactoe"],
             classifiers=[
@@ -329,55 +326,6 @@ jobs:
         name: python-package
         path: dist/
 
-  docker:
-    needs: [test, code-quality]
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-    
-    - name: Create Dockerfile
-      run: |
-        cat > Dockerfile << EOF
-        FROM python:3.11-slim
-        
-        # Set working directory
-        WORKDIR /app
-        
-        # Copy game files
-        COPY tictactoe.py .
-        COPY test_tictactoe.py .
-        
-        # Install test dependencies
-        RUN pip install --no-cache-dir pytest pytest-cov
-        
-        # Set entrypoint
-        ENTRYPOINT ["python", "tictactoe.py"]
-        EOF
-    
-    - name: Build Docker image
-      run: |
-        docker build -t tictactoe:latest .
-        docker tag tictactoe:latest tictactoe:${{ github.sha }}
-    
-    - name: Test Docker image
-      run: |
-        # Run tests in container
-        docker run --rm tictactoe:latest python -m pytest test_tictactoe.py -v
-    
-    - name: Save Docker image
-      run: |
-        docker save tictactoe:latest > tictactoe.tar
-    
-    - name: Upload Docker image
-      uses: actions/upload-artifact@v4
-      with:
-        name: docker-image
-        path: tictactoe.tar
-
   integration-test:
     needs: [test]
     runs-on: ${{ matrix.os }}
@@ -404,7 +352,7 @@ jobs:
         python -c "from tictactoe import TicTacToe; game = TicTacToe(); print('Game initialized successfully on ${{ matrix.os }}')"
 
   release:
-    needs: [build-and-package, docker, integration-test]
+    needs: [build-and-package, integration-test]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[release]')
     

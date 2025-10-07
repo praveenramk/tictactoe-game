@@ -280,53 +280,70 @@ class TestGameIntegration(unittest.TestCase):
         """Test a complete game where X wins"""
         game = TicTacToe()
         
+        # Simple horizontal win for X on top row
         moves = [
-            (1, 1),  # X center
-            (0, 0),  # O corner
-            (0, 1),  # X top middle
-            (2, 1),  # O bottom middle
-            (2, 1),  # X tries occupied (should fail)
-            (2, 0),  # X bottom left
-            (0, 2),  # O top right
-            (1, 0),  # X middle left (X wins with middle row)
+            (0, 0),  # X top-left
+            (1, 0),  # O middle-left
+            (0, 1),  # X top-middle
+            (1, 1),  # O center
+            (0, 2),  # X top-right - X wins with top row!
         ]
         
         # Play through the moves
-        expected_players = ['X', 'O', 'X', 'O', 'X', 'X', 'O', 'X']
-        move_index = 0
-        
-        for i, move in enumerate(moves):
-            if i == 4:  # The invalid move
-                result = game.make_move(move[0], move[1])
-                self.assertFalse(result)
-            else:
-                self.assertEqual(game.current_player, expected_players[move_index])
-                result = game.make_move(move[0], move[1])
-                self.assertTrue(result)
-                move_index += 1
-                
-                # Check if game is over after move index 7 (X wins)
-                if move_index == 7:
-                    break
+        for move in moves:
+            result = game.make_move(move[0], move[1])
+            self.assertTrue(result)
         
         self.assertTrue(game.game_over)
         self.assertEqual(game.winner, 'X')
+    
+    def test_complete_game_with_invalid_moves(self):
+        """Test a game with invalid move attempts"""
+        game = TicTacToe()
+        
+        # X plays center
+        self.assertTrue(game.make_move(1, 1))
+        self.assertEqual(game.current_player, 'O')
+        
+        # O plays top-left
+        self.assertTrue(game.make_move(0, 0))
+        self.assertEqual(game.current_player, 'X')
+        
+        # X tries to play on occupied square (should fail)
+        self.assertFalse(game.make_move(0, 0))
+        self.assertEqual(game.current_player, 'X')  # Still X's turn
+        
+        # X makes valid move
+        self.assertTrue(game.make_move(0, 1))
+        self.assertEqual(game.current_player, 'O')
+        
+        # O tries out of bounds move (should fail)
+        self.assertFalse(game.make_move(3, 3))
+        self.assertEqual(game.current_player, 'O')  # Still O's turn
+        
+        # Continue with valid moves
+        self.assertTrue(game.make_move(2, 2))
+        self.assertEqual(game.current_player, 'X')
     
     def test_complete_game_draw(self):
         """Test a complete game ending in draw"""
         game = TicTacToe()
         
         # Sequence that leads to a draw
+        # Final board will be:
+        # X | X | O
+        # O | O | X
+        # X | O | X
         moves = [
             (0, 0),  # X top-left
             (1, 1),  # O center
-            (0, 2),  # X top-right
-            (0, 1),  # O top-middle
-            (2, 1),  # X bottom-middle
+            (0, 1),  # X top-middle
+            (2, 1),  # O bottom-middle
+            (2, 2),  # X bottom-right
+            (0, 2),  # O top-right
+            (2, 0),  # X bottom-left
             (1, 0),  # O middle-left
             (1, 2),  # X middle-right
-            (2, 0),  # O bottom-left
-            (2, 2),  # X bottom-right
         ]
         
         for move in moves:

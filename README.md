@@ -1,6 +1,7 @@
 <h3>Tic Tac Toe Game</h3>
 A simple two-player Tic Tac Toe game implemented in Python with comprehensive testing and CI/CD pipeline using GitHub Actions.
-Features
+
+#### Features
 
 Two-player console game - Players take turns as X and O
 Input validation - Prevents invalid moves and provides clear error messages
